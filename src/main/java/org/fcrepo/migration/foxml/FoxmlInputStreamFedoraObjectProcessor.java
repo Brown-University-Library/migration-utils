@@ -442,7 +442,8 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
 
         private void validateInlineXml() {
             if (isInlineXml) {
-                final var fullDatastreamId = dsInfo.getObjectInfo().getPid() + "/" + dsInfo.getDatastreamId();
+                final var datastreamId = dsInfo.getDatastreamId();
+                final var fullDatastreamId = dsInfo.getObjectInfo().getPid() + "/" + datastreamId;
                 if (contentDigest != null && StringUtils.isNotBlank(contentDigest.getDigest())) {
                     final var expectedDigestValue = contentDigest.getDigest();
                     final var transformedXml = transformInlineXmlForChecksum();
@@ -458,7 +459,9 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                                 fullDatastreamId, contentDigest.getType(), expectedDigestValue, digestHex));
                     }
                 } else {
-                    LOG.error(fullDatastreamId + ": inline xml invalid digest!");
+                    if (!datastreamId.equals("AUDIT")) {
+                        LOG.error(fullDatastreamId + ": inline xml invalid digest!");
+                    }
                 }
             }
         }
