@@ -1,5 +1,7 @@
-# Migration Utilities [![Build Status](https://github.com/fcrepo-exts/migration-utils/workflows/Build/badge.svg)](https://github.com/fcrepo-exts/migration-utils/actions)
+# Migration Utilities [![Build Status](https://github.com/Brown-University-Library/migration-utils/workflows/Build/badge.svg)](https://github.com/Brown-University-Library/migration-utils/actions)
 A framework to support migration of data from Fedora 3 to Fedora 6 repositories
+
+Note: forked for a few minor tweaks for the BDR migration.
 
 ## Overview
 

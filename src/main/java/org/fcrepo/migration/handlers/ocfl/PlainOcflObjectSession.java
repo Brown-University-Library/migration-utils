@@ -32,6 +32,7 @@ import org.fcrepo.storage.ocfl.OcflVersionInfo;
 import org.fcrepo.storage.ocfl.PersistencePaths;
 import org.fcrepo.storage.ocfl.ResourceContent;
 import org.fcrepo.storage.ocfl.ResourceHeaders;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,6 +52,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 /**
  * Barebones OcflObjectSession implementation that writes F3 resources to OCFL without F6 resource headers.
  * Operations other than writing are not supported.
@@ -59,6 +62,7 @@ import java.util.stream.Stream;
  */
 public class PlainOcflObjectSession implements OcflObjectSession {
 
+    private static final Logger LOGGER = getLogger(PlainOcflObjectSession.class);
     private final MutableOcflRepository ocflRepo;
     private final String sessionId;
     private final String ocflObjectId;
@@ -167,11 +171,16 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                     }
                     digests.forEach((logicalPath, digestInfo) -> {
                         digestInfo.forEach((digestType, digestValue) -> {
+                            final var fileId = ocflObjectId + "/" + logicalPath;
                             try {
                                 updater.addFileFixity(logicalPath, DigestAlgorithm.fromOcflName(digestType, digestType),
                                         digestValue);
+                                LOGGER.info(fileId + ": verified " + digestType + " checksum " + digestValue);
                             } catch (OcflInputException e) {
-                                if (!e.getMessage().contains("not newly added in this update")) {
+                                final var excMsg = e.getMessage();
+                                if (excMsg.contains("not newly added in this update")) {
+                                    LOGGER.warn(fileId + ": fileFixity error - " + excMsg);
+                                } else {
                                     throw e;
                                 }
                             }

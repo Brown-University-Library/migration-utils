@@ -253,7 +253,6 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         final var f3Digest = dv.getContentDigest();
         final var ocflObjectId = session.ocflObjectId();
         final var datastreamId = dv.getDatastreamInfo().getDatastreamId();
-        final var datastreamControlGroup = dv.getDatastreamInfo().getControlGroup();
         if (fedora3DigestValid(f3Digest)) {
             try {
                 final var messageDigest = MessageDigest.getInstance(f3Digest.getType());
@@ -278,11 +277,9 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 session.writeResource(datastreamHeaders, contentStream);
             }
         } else {
-            if (datastreamControlGroup.equalsIgnoreCase("M")) {
-                final var msg = String.format("%s/%s: missing/invalid digest. Writing resource & continuing.",
+            final var msg = String.format("%s/%s: missing/invalid digest. Writing resource & continuing.",
                         ocflObjectId, datastreamId);
-                LOGGER.warn(msg);
-            }
+            LOGGER.warn(msg);
             session.writeResource(datastreamHeaders, contentStream);
         }
     }
