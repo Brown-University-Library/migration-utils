@@ -441,17 +441,24 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
         }
 
         private void validateInlineXml() {
-            if (isInlineXml && contentDigest != null && StringUtils.isNotBlank(contentDigest.getDigest())) {
-                final var transformedXml = transformInlineXmlForChecksum();
-                final var digest = DigestUtils.getDigest(contentDigest.getType());
-                final var digestBytes = DigestUtils.digest(digest, transformedXml);
-                final var digestHex = Hex.encodeHexString(digestBytes);
+            if (isInlineXml) {
+                final var fullDatastreamId = dsInfo.getObjectInfo().getPid() + "/" + dsInfo.getDatastreamId();
+                if (contentDigest != null && StringUtils.isNotBlank(contentDigest.getDigest())) {
+                    final var expectedDigestValue = contentDigest.getDigest();
+                    final var transformedXml = transformInlineXmlForChecksum();
+                    final var digest = DigestUtils.getDigest(contentDigest.getType());
+                    final var digestBytes = DigestUtils.digest(digest, transformedXml);
+                    final var digestHex = Hex.encodeHexString(digestBytes);
 
-                if (!digestHex.equalsIgnoreCase(contentDigest.getDigest())) {
-                    throw new RuntimeException(String.format(
-                            "Inline XML %s %s failed checksum validation. Expected %s: %s; Actual: %s",
-                            dsInfo.getObjectInfo().getPid(), dsInfo.getDatastreamId(),
-                            contentDigest.getType(), contentDigest.getDigest(), digestHex));
+                    if (digestHex.equalsIgnoreCase(expectedDigestValue)) {
+                        LOG.info(fullDatastreamId + ": verified inline xml fedora3 checksum " + expectedDigestValue);
+                    } else {
+                        throw new RuntimeException(String.format(
+                                "Inline XML %s failed checksum validation. Expected %s: %s; Actual: %s",
+                                fullDatastreamId, contentDigest.getType(), expectedDigestValue, digestHex));
+                    }
+                } else {
+                    LOG.error(fullDatastreamId + ": inline xml invalid digest!");
                 }
             }
         }
