@@ -460,7 +460,13 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                     }
                 } else {
                     if (!datastreamId.equals("AUDIT")) {
-                        LOG.error(fullDatastreamId + ": inline xml invalid digest!");
+                        var msg = "inline xml invalid digest - ";
+                        if (contentDigest == null) {
+                            msg = msg + "null";
+                        } else {
+                            msg = msg + "type: " + contentDigest.getType() + " digest: " + contentDigest.getDigest();
+                        }
+                        LOG.error(fullDatastreamId + ": " + msg);
                     }
                 }
             }
