@@ -166,6 +166,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
         String objectState = null;
         final Map<String, String> datastreamStates = new HashMap<>();
 
+        int versionIndex = 1;
         for (var ov : versions) {
             final OcflObjectSession session = sessionFactory.newSession(f6ObjectId);
 
@@ -228,10 +229,11 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
             }
 
-            LOGGER.debug("Committing object version <{}>", f6ObjectId);
+            LOGGER.info("Committing ocfl version {}", versionIndex);
 
             session.versionCreationTimestamp(OffsetDateTime.parse(ov.getVersionDate()));
             session.commit();
+            versionIndex += 1;
         }
 
         handleDeletedResources(f6ObjectId, objectState, datastreamStates);
@@ -318,6 +320,7 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
             }
 
             if (hasDeletes.get()) {
+                LOGGER.info("Committing deletes version");
                 session.versionCreationTimestamp(now);
                 session.commit();
             } else {

@@ -31,8 +31,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author pwinckles
@@ -103,16 +101,11 @@ public class InlineXmlIT {
     }
 
     @Test
-    public void failMigrationWhenInlineXmlDoesNotMatchDigest() throws Exception {
+    public void allowMigrationWhenInlineXmlDoesNotMatchDigest() throws Exception {
+        //log an error, but continue migrating object if inline xml doesn't match
         setup("inline-invalid-it");
 
-        try {
-            migrator.run();
-            fail("Expected migrator to fail");
-        } catch (RuntimeException e) {
-            assertTrue(e.getMessage()
-                    .contains("DC failed checksum validation. Expected MD5: 4e2a6140aa1369de6dd9736dfa8ab946"));
-        }
+        migrator.run();
     }
 
 }

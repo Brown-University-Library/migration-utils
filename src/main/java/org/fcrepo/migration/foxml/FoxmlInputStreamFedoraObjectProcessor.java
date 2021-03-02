@@ -454,13 +454,19 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                     if (digestHex.equalsIgnoreCase(expectedDigestValue)) {
                         LOG.info(fullDatastreamId + ": verified inline xml fedora3 checksum " + expectedDigestValue);
                     } else {
-                        throw new RuntimeException(String.format(
+                        LOG.error(String.format(
                                 "Inline XML %s failed checksum validation. Expected %s: %s; Actual: %s",
                                 fullDatastreamId, contentDigest.getType(), expectedDigestValue, digestHex));
                     }
                 } else {
                     if (!datastreamId.equals("AUDIT")) {
-                        LOG.error(fullDatastreamId + ": inline xml invalid digest!");
+                        var msg = "inline xml invalid digest - ";
+                        if (contentDigest == null) {
+                            msg = msg + "null";
+                        } else {
+                            msg = msg + "type: " + contentDigest.getType() + " digest: " + contentDigest.getDigest();
+                        }
+                        LOG.error(fullDatastreamId + ": " + msg);
                     }
                 }
             }
