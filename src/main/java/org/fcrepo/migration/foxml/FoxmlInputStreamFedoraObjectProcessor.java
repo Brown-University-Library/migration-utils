@@ -191,7 +191,16 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                         dsInfo = new Foxml11DatastreamInfo(objectInfo, reader);
                     } else if (reader.getLocalName().equals("datastreamVersion")) {
                         final var v = new Foxml11DatastreamVersion(dsInfo, reader);
-                        v.validateInlineXml();
+                        try {
+                            v.validateInlineXml();
+                        } catch (RuntimeException e) {
+                            final var datastreamId = dsInfo.getDatastreamId();
+                            final var fullDatastreamId = dsInfo.getObjectInfo().getPid() + "/" + datastreamId;
+                            final var msg = fullDatastreamId +
+                                    " : inline xml validation error (still migrating content)";
+                            LOG.error(msg);
+                            LOG.error(e.getMessage());
+                        }
                         handler.processDatastreamVersion(v);
                     } else {
                         throw new RuntimeException("Unexpected element! \"" + reader.getLocalName() + "\"!");
@@ -454,19 +463,19 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                     if (digestHex.equalsIgnoreCase(expectedDigestValue)) {
                         LOG.info(fullDatastreamId + ": verified inline xml fedora3 checksum " + expectedDigestValue);
                     } else {
-                        LOG.error(String.format(
-                                "Inline XML %s failed checksum validation. Expected %s: %s; Actual: %s",
-                                fullDatastreamId, contentDigest.getType(), expectedDigestValue, digestHex));
+                        throw new RuntimeException(String.format(
+                                "failed checksum validation. Expected %s: %s; Actual: %s",
+                                contentDigest.getType(), expectedDigestValue, digestHex));
                     }
                 } else {
                     if (!datastreamId.equals("AUDIT")) {
-                        var msg = "inline xml invalid digest - ";
+                        var msg = "invalid digest - ";
                         if (contentDigest == null) {
                             msg = msg + "null";
                         } else {
                             msg = msg + "type: " + contentDigest.getType() + " digest: " + contentDigest.getDigest();
                         }
-                        LOG.error(fullDatastreamId + ": " + msg);
+                        throw new RuntimeException(msg);
                     }
                 }
             }
@@ -519,12 +528,8 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             } catch (SAXException e) {
-                try {
-                    LOG.error("Malformed inline XML: {}", IOUtils.toString(dsContent.getInputStream()));
-                } catch (IOException e2) {
-                    // swallow
-                }
-                throw new RuntimeException(e);
+                final var msg = "malformed: " + e.getMessage();
+                throw new RuntimeException(msg);
             }
         }
 

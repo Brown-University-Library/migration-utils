@@ -179,7 +179,7 @@ public class PlainOcflObjectSession implements OcflObjectSession {
                             } catch (OcflInputException e) {
                                 final var excMsg = e.getMessage();
                                 if (excMsg.contains("not newly added in this update")) {
-                                    LOGGER.warn(fileId + ": fileFixity error - " + excMsg);
+                                    LOGGER.warn(fileId + ": fileFixity - " + excMsg);
                                 } else {
                                     throw e;
                                 }
