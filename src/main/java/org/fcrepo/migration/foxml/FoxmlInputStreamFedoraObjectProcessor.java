@@ -197,9 +197,9 @@ public class FoxmlInputStreamFedoraObjectProcessor implements FedoraObjectProces
                             final var datastreamId = dsInfo.getDatastreamId();
                             final var fullDatastreamId = dsInfo.getObjectInfo().getPid() + "/" + datastreamId;
                             final var msg = fullDatastreamId +
-                                    " : inline xml validation error (still migrating content)";
+                                    " : inline xml validation error (still migrating content) - " +
+                                    e.getMessage();
                             LOG.error(msg);
-                            LOG.error(e.getMessage());
                         }
                         handler.processDatastreamVersion(v);
                     } else {
