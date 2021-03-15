@@ -206,26 +206,30 @@ public class ArchiveGroupHandler implements FedoraObjectVersionHandler {
                 }
                 final var createDate = dsCreateDates.get(dsId);
 
-                final var datastreamHeaders = createDatastreamHeaders(dv, f6DsId, f6ObjectId,
-                        datastreamFilename, mimeType, createDate);
+                try {
+                    final var datastreamHeaders = createDatastreamHeaders(dv, f6DsId, f6ObjectId,
+                            datastreamFilename, mimeType, createDate);
 
-                if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
-                    InputStream content = null;
-                    // for plain OCFL migrations, write a file containing the external/redirect URL
-                    if (migrationType == MigrationType.PLAIN_OCFL) {
-                        content = IOUtils.toInputStream(dv.getExternalOrRedirectURL());
+                    if (externalHandlingMap.containsKey(dv.getDatastreamInfo().getControlGroup())) {
+                        InputStream content = null;
+                        // for plain OCFL migrations, write a file containing the external/redirect URL
+                        if (migrationType == MigrationType.PLAIN_OCFL) {
+                            content = IOUtils.toInputStream(dv.getExternalOrRedirectURL());
+                        }
+                        session.writeResource(datastreamHeaders, content);
+                    } else {
+                        try (var contentStream = dv.getContent()) {
+                            writeDatastreamContent(dv, datastreamHeaders, contentStream, session);
+                        } catch (final IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
                     }
-                    session.writeResource(datastreamHeaders, content);
-                } else {
-                    try (var contentStream = dv.getContent()) {
-                        writeDatastreamContent(dv, datastreamHeaders, contentStream, session);
-                    } catch (final IOException e) {
-                        throw new UncheckedIOException(e);
+                    if (!foxmlFile) {
+                        writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
                     }
-                }
-
-                if (!foxmlFile) {
-                    writeDescriptionFiles(f6DsId, datastreamFilename, createDate, datastreamHeaders, dv, session);
+                } catch (Exception e) {
+                    LOGGER.error("error handling " + f6DsId + ": ");
+                    throw e;
                 }
             }
 
